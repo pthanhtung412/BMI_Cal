@@ -104,6 +104,7 @@ form .submit input:hover {
 $errh = $errw = "";
 $height = $weight = "";
 $bmipass = "";
+include "connection.php";
 
 if ($_SERVER['REQUEST_METHOD'] == "POST") {
     if (empty($_POST['height'])) {
@@ -127,6 +128,10 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
     else {
         $bmi = ($weight / ($height * $height));
         $bmipass = $bmi;
+        if (isset($_SESSION['name'])) {
+            $sql = "insert into bmi_his(username, height, weight, BMI) values('{$_SESSION['name']}', '$height', '$weight', '$bmipass')";
+            $result = mysqli_query($conn, $sql);
+        }
     }
 
 }
@@ -141,7 +146,7 @@ function validation($data) {
 ?>
 <div class="wrapper">
 <h2>Tính toán chỉ số BMI:</h2>
-            <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']);?>" method="post">
+            <form id="Form" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']);?>" method="post">
                 <div class="section1">
                     <label>Nhập chiều cao của bạn:</label>
                     <input type="text" placeholder="m" name="height" autocomplete="off">
@@ -156,13 +161,19 @@ function validation($data) {
                 <div class="submit">
                     <input type="submit" value="Nhập" name="submit">
                     <input type="reset" value="Xóa">
+                    <?php 
+                        if (isset($_SESSION['name'])) {
+                            echo '<input type="submit" value="Xem lịch sử bmi" name="bmi_his">';
+                        }
+                    ?>
                 </div>
             </form>
 
 <?php
-    error_reporting(0);
-        echo "<span class='pass'>BMI của bạn là : ". number_format($bmipass , 2) ."</span>";
+    
+        error_reporting(0);
     if (isset($_POST['submit'])){
+        echo "<span class='pass'>BMI của bạn là : ". number_format($bmipass , 2) ."</span>";
         if ($bmipass >= 13.6 && $bmipass <= 18.5) {
             echo "<span style='color:#00203FFF; display:block; margin-top:5px ;margin-right:70px'> Trọng lượng cơ thể thấp. Bạn cần tăng cân bằng cách ăn uống điều độ.</span>";?>
             <img src="assets/thieu can.png" class="one" width="30" height="70"><?php
@@ -179,10 +190,22 @@ function validation($data) {
             echo "<span style='color:#00203FFF; display:block; margin-top:5px;margin-right:70px'> Béo phì nguy hiểm. Cần có chế độ ăn uống và tập thể dục phù hợp, cần có thêm sự tư vấn của bác sĩ.</span>";?>
             <img src="assets/thua can (3).png" class="five" width="30" height="70"><?php
         }
-    } else {
+    } 
+    elseif(isset($_POST['bmi_his'])) {
+        echo '<script>window.location.href = "bmi_history.php"</script>';
+    }
+    else {
         echo "";
     }
 ?>
       </div>
+      <!-- Phần HTML trước đây -->
+
+    <script>
+        function setFormAction(action) {
+            document.getElementById('Form').action = action;
+            return true; // Trả về true để submit form sau khi thay đổi action
+        }
+    </script>
     </body>
 </html>
